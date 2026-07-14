@@ -1,4 +1,4 @@
-# Usage CSV design (IL)
+# Usage CSV design
 
 Parent: [../ARCHITECTURE.md](../ARCHITECTURE.md). Scoring: [scoring.md](scoring.md).
 
@@ -6,7 +6,7 @@ Parent: [../ARCHITECTURE.md](../ARCHITECTURE.md). Scoring: [scoring.md](scoring.
 
 Turn a usage file into a list of pulses the scorer can aggregate to **hours**.
 
-Several CSV dialects exist. **IEC export is format #1 (v1).** Others added later as separate parsers — not by bending the IEC one.
+Several CSV dialects exist. **One adapter per format** — do not bend an existing parser to fit a new dialect.
 
 ## Canonical pulse (after parse)
 
@@ -16,7 +16,7 @@ Every format adapter must emit:
 { meter_id?, timestamp, kwh_import, kwh_export? }
 ```
 
-- `timestamp` — interval/pulse start, `Asia/Jerusalem`
+- `timestamp` — interval/pulse start in market **`timezone`**
 - `kwh_import` — import for that pulse
 - `kwh_export` — optional; ignored in score v1
 
@@ -30,19 +30,17 @@ Period-only totals (no time-of-day) → reject; cannot rank windowed plans.
 
 | `format_id` | Status | Notes |
 |-------------|--------|--------|
-| `iec` | **v1** | IEC / חח"י style export (Hebrew headers, preamble) — below |
-| other | Later | Supplier portal exports, etc. Own detector + parser module |
+| `il_iec` | First sample | Israel utility (IEC) export — appendix below |
+| other | Later | Own detector + parser module |
 
-**Detect:** try known header signatures (IEC first). If ambiguous, UI lets user pick format.  
-**Implement:** one module per `format_id` under `apps/web` (e.g. `usage/formats/iec.ts`). Shared normalize → canonical pulses.
-
-Do not stuff foreign columns into the IEC parser.
+**Detect:** try known header signatures. If ambiguous, UI lets user pick format.  
+**Implement:** one module per `format_id` under `apps/web` (e.g. `usage/formats/il_iec.ts`). Shared normalize → canonical pulses.
 
 ---
 
-## Format: `iec` (v1)
+## Appendix: format `il_iec`
 
-IEC export often has a messy preamble (customer name, address, contract, meter summary). **Parser ignores that.**
+Israel utility export often has a messy preamble (customer name, address, contract, meter summary). **Parser ignores that.**
 
 Detect data table by header row (exact Hebrew names):
 
@@ -55,7 +53,7 @@ Detect data table by header row (exact Hebrew names):
 | `צריכה/ייצור בקוט"ש` | Import kWh |
 | `הזרמה בקוט"ש` | Export kWh (may be empty) |
 
-### Rules (`iec` only)
+### Rules (`il_iec` only)
 
 - Skip preamble / `___` lines until header match.
 - CSV may quote fields; `קוט"ש` appears as doubled quotes inside quoted cells.
@@ -63,7 +61,7 @@ Detect data table by header row (exact Hebrew names):
 - Pulses often sub-hour (e.g. 15‑min).
 - Typical file ≈ one billing period (~2 months).
 
-### Open (`iec`)
+### Open (`il_iec`)
 
 **Still need** one anonymized data row for exact `תאריך` / `מועד תחילת הפעימה` string formats.
 

@@ -2,10 +2,9 @@
   "schema_version": 1,
   "market": "il",
   "as_of": "2026-07-14",
-  "currency": "ILS",
   "vat_included": true,
   "billing_period_months": 2,
-  "iec_flat_plan_id": "iec-flat",
+  "flat_base_plan_id": "iec-flat",
   "suppliers": [
     {
       "id": "iec",
@@ -29,9 +28,9 @@
       "name": "Residential flat",
       "status": "active",
       "rate_model": "flat",
-      "flat_ils_kwh": 0.48,
+      "flat_rate_per_kwh": 0.48,
       "windows": null,
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": null,
       "available_to": null,
@@ -47,14 +46,14 @@
       "name": "Residential TAOz",
       "status": "active",
       "rate_model": "absolute_windows",
-      "flat_ils_kwh": null,
+      "flat_rate_per_kwh": null,
       "windows": [
         {
           "start": "17:00",
           "end": "23:00",
           "months": [6, 7, 8, 9],
           "weekdays": [0, 1, 2, 3, 4],
-          "rate_ils_kwh": 0.55,
+          "rate_per_kwh": 0.55,
           "discount_pct": null
         },
         {
@@ -62,11 +61,11 @@
           "end": "24:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": 0.38,
+          "rate_per_kwh": 0.38,
           "discount_pct": null
         }
       ],
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": null,
       "available_to": null,
@@ -74,7 +73,7 @@
       "source_url": null,
       "extracted_at": null,
       "contract_months": 0,
-      "notes": "Illustrative TAOz; fill real windows/rates from official table. First match wins."
+      "notes": "Illustrative TAOz; weekdays 0-4 = Sun-Thu under market week_start sunday. Fill real windows/rates from official table. First match wins."
     },
     {
       "id": "example-energy-a",
@@ -82,14 +81,14 @@
       "name": "Plan A (window %)",
       "status": "active",
       "rate_model": "pct_off_flat",
-      "flat_ils_kwh": null,
+      "flat_rate_per_kwh": null,
       "windows": [
         {
           "start": "00:00",
           "end": "07:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 5
         },
         {
@@ -97,7 +96,7 @@
           "end": "20:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 0
         },
         {
@@ -105,11 +104,11 @@
           "end": "24:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 10
         }
       ],
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": "2025-01-01",
       "available_to": null,
@@ -125,14 +124,14 @@
       "name": "Plan B (other windows)",
       "status": "active",
       "rate_model": "pct_off_flat",
-      "flat_ils_kwh": null,
+      "flat_rate_per_kwh": null,
       "windows": [
         {
           "start": "06:00",
           "end": "22:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 0
         },
         {
@@ -140,11 +139,11 @@
           "end": "06:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 10
         }
       ],
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": "2025-01-01",
       "available_to": null,
