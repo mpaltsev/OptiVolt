@@ -6,24 +6,42 @@ Parent: [../ARCHITECTURE.md](../ARCHITECTURE.md). Windows rules: [windows.md](wi
 
 | File | Authoring | Role |
 |------|-----------|------|
-| `packages/catalog/manifest.json` | Hand | Market → which dated catalog `apps/web` bundles |
-| `packages/catalog/il/catalog-YYYY-MM-DD.json` | LLM for private; hand for IEC | Suppliers + plans + windows |
+| `packages/catalog/manifest.json` | Hand | Stable market config + which dated catalog ships |
+| `packages/catalog/<market>/catalog-YYYY-MM-DD.json` | Hand + LLM (private) | Dated suppliers + plans + windows |
 
 ```json
 {
   "markets": {
-    "il": {
-      "catalog": "il/catalog-2026-07-14.json"
+    "<market>": {
+      "catalog": "<market>/catalog-YYYY-MM-DD.json",
+      "default_supplier_id": "<supplier_id>",
+      "currency": "XXX",
+      "timezone": "Area/City",
+      "week_start": "sunday"
     }
   }
 }
 ```
 
-Paths in the manifest are relative to `packages/catalog/`. Market id lives only as the map key (not repeated inside each market folder).
+Paths in the manifest are relative to `packages/catalog/`. Market id lives only as the map key.
 
-Catalog field `iec_flat_plan_id` must point at the published IEC flat plan (base for `%` plans).
+**Manifest (stable per market — not copied per `as_of`):**
+
+| Field | Meaning |
+|-------|---------|
+| `catalog` | Relative path to the dated catalog file currently shipped |
+| `default_supplier_id` | UI baseline supplier; that supplier’s `default_plan_id` picks starting plan |
+| `currency` | ISO 4217; unit for all rate/fee/score amounts |
+| `timezone` | IANA TZ for window clocks + usage local time |
+| `week_start` | `sunday` \| `monday` — weekday index 0 for `windows[].weekdays` |
+
+**Dated catalog:** rates, plans, `as_of`, `flat_base_plan_id`, billing defaults. Rate fields are denominated in the market’s manifest `currency`.
+
+`flat_base_plan_id` must point at a published `flat` plan **in that catalog file** (base for all `pct_off_flat` plans).
 
 Format: **JSON** (+ later JSON Schema under `packages/catalog/`).
+
+Shipped sample: market `il` + `packages/catalog/il/`. Other markets = new folder + manifest entry.
 
 ## Lifecycle: draft vs published
 
@@ -39,38 +57,37 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
 ```json
 {
   "schema_version": 1,
-  "market": "il",
-  "as_of": "2026-07-14",
-  "currency": "ILS",
+  "market": "<market>",
+  "as_of": "YYYY-MM-DD",
   "vat_included": true,
   "billing_period_months": 2,
-  "iec_flat_plan_id": "iec-flat",
+  "flat_base_plan_id": "utility-flat",
   "suppliers": [
     {
-      "id": "iec",
-      "name": "IEC",
-      "website": "https://www.iec.co.il",
-      "default_plan_id": "iec-taoz",
+      "id": "utility",
+      "name": "Utility",
+      "website": "https://example.com",
+      "default_plan_id": "utility-tou",
       "billing_period_months": 2
     },
     {
-      "id": "example-energy",
-      "name": "Example Energy",
-      "website": "https://example.co.il",
-      "default_plan_id": "example-energy-a",
+      "id": "competitor",
+      "name": "Competitor",
+      "website": "https://example.com",
+      "default_plan_id": "competitor-a",
       "billing_period_months": 2
     }
   ],
   "plans": [
     {
-      "id": "iec-flat",
-      "supplier_id": "iec",
+      "id": "utility-flat",
+      "supplier_id": "utility",
       "name": "Residential flat",
       "status": "active",
       "rate_model": "flat",
-      "flat_ils_kwh": 0.48,
+      "flat_rate_per_kwh": 0.48,
       "windows": null,
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": null,
       "available_to": null,
@@ -81,19 +98,19 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
       "notes": "BASE rate for all pct_off_flat plans"
     },
     {
-      "id": "iec-taoz",
-      "supplier_id": "iec",
-      "name": "Residential TAOz",
+      "id": "utility-tou",
+      "supplier_id": "utility",
+      "name": "Residential TOU",
       "status": "active",
       "rate_model": "absolute_windows",
-      "flat_ils_kwh": null,
+      "flat_rate_per_kwh": null,
       "windows": [
         {
           "start": "17:00",
           "end": "23:00",
           "months": [6, 7, 8, 9],
           "weekdays": [0, 1, 2, 3, 4],
-          "rate_ils_kwh": 0.55,
+          "rate_per_kwh": 0.55,
           "discount_pct": null
         },
         {
@@ -101,11 +118,11 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
           "end": "24:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": 0.38,
+          "rate_per_kwh": 0.38,
           "discount_pct": null
         }
       ],
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": null,
       "available_to": null,
@@ -113,22 +130,22 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
       "source_url": null,
       "extracted_at": null,
       "contract_months": 0,
-      "notes": "Illustrative TAOz; fill real windows/rates from official table. First match wins."
+      "notes": "Illustrative TOU; first match wins"
     },
     {
-      "id": "example-energy-a",
-      "supplier_id": "example-energy",
+      "id": "competitor-a",
+      "supplier_id": "competitor",
       "name": "Plan A (window %)",
       "status": "active",
       "rate_model": "pct_off_flat",
-      "flat_ils_kwh": null,
+      "flat_rate_per_kwh": null,
       "windows": [
         {
           "start": "00:00",
           "end": "07:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 5
         },
         {
@@ -136,7 +153,7 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
           "end": "20:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 0
         },
         {
@@ -144,54 +161,19 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
           "end": "24:00",
           "months": null,
           "weekdays": null,
-          "rate_ils_kwh": null,
+          "rate_per_kwh": null,
           "discount_pct": 10
         }
       ],
-      "fixed_ils_per_period": 0,
+      "fixed_per_period": 0,
       "discount_schedule": null,
       "available_from": "2025-01-01",
       "available_to": null,
       "confidence": 0.9,
-      "source_url": "https://example.co.il/plans/a",
+      "source_url": "https://example.com/plans/a",
       "extracted_at": "2026-07-14T10:00:00Z",
       "contract_months": 0,
-      "notes": "% off iec-flat; contiguous half-open windows (marketing 00:01/07:01 normalized at ingest)"
-    },
-    {
-      "id": "example-energy-b",
-      "supplier_id": "example-energy",
-      "name": "Plan B (other windows)",
-      "status": "active",
-      "rate_model": "pct_off_flat",
-      "flat_ils_kwh": null,
-      "windows": [
-        {
-          "start": "06:00",
-          "end": "22:00",
-          "months": null,
-          "weekdays": null,
-          "rate_ils_kwh": null,
-          "discount_pct": 0
-        },
-        {
-          "start": "22:00",
-          "end": "06:00",
-          "months": null,
-          "weekdays": null,
-          "rate_ils_kwh": null,
-          "discount_pct": 10
-        }
-      ],
-      "fixed_ils_per_period": 0,
-      "discount_schedule": null,
-      "available_from": "2025-01-01",
-      "available_to": null,
-      "confidence": 0.9,
-      "source_url": "https://example.co.il/plans/b",
-      "extracted_at": "2026-07-14T10:00:00Z",
-      "contract_months": 0,
-      "notes": "Same supplier, different windows; overnight wrap OK"
+      "notes": "% off flat_base_plan_id; contiguous half-open windows"
     }
   ]
 }
@@ -202,18 +184,16 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
 | Field | Values / rule |
 |-------|----------------|
 | `rate_model` | `flat` \| `absolute_windows` \| `pct_off_flat` |
-| `flat` | Requires `flat_ils_kwh`; `windows` null |
-| `absolute_windows` | `windows` with `rate_ils_kwh` each; pass coverage validate. IEC TAOz uses this |
-| `pct_off_flat` | `windows` with `discount_pct` each **or** single full-day window; base = `iec_flat_plan_id` |
+| `flat` | Requires `flat_rate_per_kwh`; `windows` null |
+| `absolute_windows` | `windows` with `rate_per_kwh` each; pass coverage validate |
+| `pct_off_flat` | `windows` with `discount_pct` each **or** single full-day window; base = `flat_base_plan_id` |
 | Uniform % all day | One window `00:00`→`24:00` with that `discount_pct` (no separate top-level % field) |
-| `iec_flat_plan_id` | Catalog-level; must be a `flat` plan |
+| `flat_base_plan_id` | Catalog-level; must be a `flat` plan in the same file |
 | `status` | `active` \| `discontinued` |
-| `discount_schedule` | Reserved for tenure; **v1 score ignores**. Prefer separate plans if welcome vs after differ a lot |
-| `vat_included` | Must be `true` for IL v1 |
-| `billing_period_months` | Catalog default **2**; supplier may override |
-| `fixed_ils_per_period` | Standing ₪ per billing period |
-| Exit fees | Not in Israel — omit |
-| IEC | Supplier `iec` with at least `iec-flat` + `iec-taoz` |
+| `discount_schedule` | Reserved for tenure; **v1 score ignores** |
+| `vat_included` | Market policy flag on the dated file (scorer does not add VAT separately in v1) |
+| `billing_period_months` | Catalog default; supplier may override |
+| `fixed_per_period` | Standing charge per billing period (market `currency`) |
 | Current plan | Any published plan (**incl. discontinued**) |
 | Switch-to list | Other `status == active` plans only |
 

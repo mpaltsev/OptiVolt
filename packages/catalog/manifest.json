@@ -1,7 +1,11 @@
 {
   "markets": {
     "il": {
-      "catalog": "il/catalog-2026-07-14.json"
+      "catalog": "il/catalog-2026-07-14.json",
+      "default_supplier_id": "iec",
+      "currency": "ILS",
+      "timezone": "Asia/Jerusalem",
+      "week_start": "sunday"
     }
   }
 }

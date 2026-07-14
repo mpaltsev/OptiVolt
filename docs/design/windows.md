@@ -8,7 +8,7 @@ On each plan, `windows` is an ordered list. **First matching rule wins.**
 
 **Per plan only.** No supplier-level clock. Same supplier may use different windows on different plans.
 
-Times are `HH:MM` in `Asia/Jerusalem`. Convert to minutes-from-midnight: `00:00` → 0, `24:00` → 1440. **`end: "00:00"` is forbidden** (ambiguous). Always use `"24:00"` for end-of-day.
+Times are `HH:MM` in the market **`timezone`** (IANA, from manifest). Convert to minutes-from-midnight: `00:00` → 0, `24:00` → 1440. **`end: "00:00"` is forbidden** (ambiguous). Always use `"24:00"` for end-of-day.
 
 | Field | Meaning |
 |-------|---------|
@@ -17,9 +17,9 @@ Times are `HH:MM` in `Asia/Jerusalem`. Convert to minutes-from-midnight: `00:00`
 | Same-day | `start < end` (e.g. `07:00`→`20:00`) → matches `start ≤ t < end` |
 | Overnight wrap | `end < start` (e.g. `22:00`→`06:00`) → matches `t ≥ start` **or** `t < end` |
 | `months` | Optional; `null` = all. 1 = January |
-| `weekdays` | Optional; `null` = all. **Monday = 0 … Sunday = 6** |
+| `weekdays` | Optional; `null` = all. Index **0 = market `week_start`** (`sunday` → 0=Sun…6=Sat; `monday` → 0=Mon…6=Sun) |
 | `discount_pct` | For `pct_off_flat` |
-| `rate_ils_kwh` | For `absolute_windows` |
+| `rate_per_kwh` | For `absolute_windows` (market `currency`) |
 
 ## Marketing clocks → published
 
