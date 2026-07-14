@@ -1,42 +1,3 @@
-# Catalog design
-
-Parent: [../ARCHITECTURE.md](../ARCHITECTURE.md). Windows rules: [windows.md](windows.md).
-
-## Files
-
-| File | Authoring | Role |
-|------|-----------|------|
-| `packages/catalog/manifest.json` | Hand | Market → which dated catalog `apps/web` bundles |
-| `packages/catalog/il/catalog-YYYY-MM-DD.json` | LLM for private; hand for IEC | Suppliers + plans + windows |
-
-```json
-{
-  "markets": {
-    "il": {
-      "catalog": "il/catalog-2026-07-14.json"
-    }
-  }
-}
-```
-
-Paths in the manifest are relative to `packages/catalog/`. Market id lives only as the map key (not repeated inside each market folder).
-
-Catalog field `iec_flat_plan_id` must point at the published IEC flat plan (base for `%` plans).
-
-Format: **JSON** (+ later JSON Schema under `packages/catalog/`).
-
-## Lifecycle: draft vs published
-
-| Stage | Where | `status` |
-|-------|--------|----------|
-| Extract draft | `tools/extract` output / PR scratch | not in published file |
-| Published | `catalog-*.json` | `active` or `discontinued` only |
-
-Merging into catalog = approval. No `reviewed` / `draft` in published file.
-
-## Catalog file shape
-
-```json
 {
   "schema_version": 1,
   "market": "il",
@@ -195,28 +156,3 @@ Merging into catalog = approval. No `reviewed` / `draft` in published file.
     }
   ]
 }
-```
-
-## Enums / field rules
-
-| Field | Values / rule |
-|-------|----------------|
-| `rate_model` | `flat` \| `absolute_windows` \| `pct_off_flat` |
-| `flat` | Requires `flat_ils_kwh`; `windows` null |
-| `absolute_windows` | `windows` with `rate_ils_kwh` each; pass coverage validate. IEC TAOz uses this |
-| `pct_off_flat` | `windows` with `discount_pct` each **or** single full-day window; base = `iec_flat_plan_id` |
-| Uniform % all day | One window `00:00`→`24:00` with that `discount_pct` (no separate top-level % field) |
-| `iec_flat_plan_id` | Catalog-level; must be a `flat` plan |
-| `status` | `active` \| `discontinued` |
-| `discount_schedule` | Reserved for tenure; **v1 score ignores**. Prefer separate plans if welcome vs after differ a lot |
-| `vat_included` | Must be `true` for IL v1 |
-| `billing_period_months` | Catalog default **2**; supplier may override |
-| `fixed_ils_per_period` | Standing ₪ per billing period |
-| Exit fees | Not in Israel — omit |
-| IEC | Supplier `iec` with at least `iec-flat` + `iec-taoz` |
-| Current plan | Any published plan (**incl. discontinued**) |
-| Switch-to list | Other `status == active` plans only |
-
-Resolve period length: `supplier.billing_period_months` ?? catalog default.
-
-**ponytail:** Tenure/stage deferred. Window `%` / absolute rates only.
