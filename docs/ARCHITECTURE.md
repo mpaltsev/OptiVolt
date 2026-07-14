@@ -45,9 +45,10 @@ Details: [design/catalog.md](design/catalog.md), [design/windows.md](design/wind
 
 ```text
 optivolt/
-  packages/catalog/il/
-    catalog-YYYY-MM-DD.json   # suppliers + plans (incl. IEC)
-    manifest.json             # which catalog file ships
+  packages/catalog/
+    manifest.json             # market → which dated catalog ships
+    il/
+      catalog-YYYY-MM-DD.json # suppliers + plans (incl. IEC)
   apps/web/                   # TypeScript — Vite SPA + cost scoring
   tools/extract/              # Python — private supplier LLM extract
   docs/
@@ -55,7 +56,7 @@ optivolt/
     design/
 ```
 
-`apps/web` bundles catalog via `manifest.json`. `tools/extract` merges private plans into the catalog. Windows live **on the plan**. No separate IEC tariff or global TOU registry files.
+`apps/web` bundles catalogs via root `manifest.json` (market keys). `tools/extract` merges private plans into the catalog. Windows live **on the plan**. No separate IEC tariff or global TOU registry files.
 
 ## Two products, one handoff
 
