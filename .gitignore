@@ -1,6 +1,7 @@
 .agents/
 .cursor/
 skills-lock.json
+**/.DS_Store
 
 # Node / TypeScript
 node_modules/

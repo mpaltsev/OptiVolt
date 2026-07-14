@@ -1,16 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { TimeWindow } from "../catalog/types.js";
-import type { HourUsage } from "../usage/aggregate.js";
 import { WindowMatcher } from "./windows.js";
-
-function hour(
-  year: number,
-  month: number,
-  day: number,
-  hourOfDay: number,
-): HourUsage {
-  return { year, month, day, hour: hourOfDay, kwh: 1 };
-}
+import { hour } from "./test_helpers.js";
 
 function window(
   partial: Partial<TimeWindow> & Pick<TimeWindow, "start" | "end">,

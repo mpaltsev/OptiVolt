@@ -23,6 +23,10 @@ export type Supplier = {
   website: string;
   default_plan_id: string;
   billing_period_months?: number;
+  /** Customer support phone (E.164 or local display). */
+  phone?: string | null;
+  /** Optional 0–5 support rating for UI popover. */
+  support_rating?: number | null;
 };
 
 export type Plan = {

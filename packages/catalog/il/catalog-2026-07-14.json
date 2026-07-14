@@ -11,14 +11,18 @@
       "name": "IEC",
       "website": "https://www.iec.co.il",
       "default_plan_id": "iec-taoz",
-      "billing_period_months": 2
+      "billing_period_months": 2,
+      "phone": "103",
+      "support_rating": 3.2
     },
     {
       "id": "example-energy",
       "name": "Example Energy",
       "website": "https://example.co.il",
       "default_plan_id": "example-energy-a",
-      "billing_period_months": 2
+      "billing_period_months": 2,
+      "phone": "*XXXX",
+      "support_rating": 4.1
     }
   ],
   "plans": [
