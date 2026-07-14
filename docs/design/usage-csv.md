@@ -63,7 +63,16 @@ Detect data table by header row (exact Hebrew names):
 
 ### Open (`il_iec`)
 
-**Still need** one anonymized data row for exact `תאריך` / `מועד תחילת הפעימה` string formats.
+**Still need** one *real* anonymized data row to confirm live IEC dumps.
+
+**Assumed for synthetic fixture** (`apps/web/src/usage/formats/fixtures/il_iec_sample.csv`) until then:
+
+| Field | Format |
+|-------|--------|
+| `תאריך` | `DD/MM/YYYY` |
+| `מועד תחילת הפעימה` | `HH:MM` or `HH:MM:SS` |
+
+Swap the fixture (and parser if needed) when a real sample lands.
 
 ---
 

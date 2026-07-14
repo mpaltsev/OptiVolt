@@ -1,0 +1,22 @@
+type LogoProps = {
+  className?: string;
+  title?: string;
+};
+
+/** Inline brand mark (same geometry as /favicon.svg). */
+export function Logo({ className, title = "OptiVolt" }: LogoProps) {
+  return (
+    <svg
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 64 64"
+      fill="none"
+      role="img"
+      aria-label={title}
+    >
+      <rect width="64" height="64" rx="14" fill="#0e1214" />
+      <path fill="#2ec4b6" d="M36 14 L16 36 H30 L26 50 L48 26 H34 Z" />
+      <circle cx="48" cy="16" r="3" fill="#e8eef0" />
+    </svg>
+  );
+}

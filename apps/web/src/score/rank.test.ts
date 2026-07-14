@@ -1,50 +1,21 @@
 import { describe, expect, it } from "vitest";
-import { CatalogLoader, CatalogStore } from "../catalog/load.js";
-import type { Catalog, Plan } from "../catalog/types.js";
-import type { HourUsage } from "../usage/aggregate.js";
+import type { Catalog } from "../catalog/types.js";
 import { PlanRanker } from "./rank.js";
+import { hour, ilCatalog, storeFor, withPlan } from "./test_helpers.js";
 
-const marketStore = new CatalogLoader().loadStore("il");
-const sampleCatalog = marketStore.raw;
-
-function hour(
-  year: number,
-  month: number,
-  day: number,
-  hourOfDay: number,
-  kwh: number,
-): HourUsage {
-  return { year, month, day, hour: hourOfDay, kwh };
-}
-
-function withPlanStatus(
-  source: Catalog,
-  planId: string,
-  status: Plan["status"],
-): Catalog {
-  return {
-    ...source,
-    plans: source.plans.map((plan) =>
-      plan.id === planId ? { ...plan, status } : plan,
-    ),
-  };
-}
+const sampleCatalog = ilCatalog();
 
 function rankerFor(catalog: Catalog): PlanRanker {
-  return new PlanRanker(
-    new CatalogStore("il", catalog, marketStore.marketEntry()),
-  );
+  return new PlanRanker(storeFor(catalog));
 }
 
 describe("PlanRanker", () => {
   const hours = [hour(2026, 7, 14, 10, 5), hour(2026, 7, 14, 21, 5)];
 
   it("scores a discontinued current plan", () => {
-    const catalogClone = withPlanStatus(
-      sampleCatalog,
-      "example-energy-a",
-      "discontinued",
-    );
+    const catalogClone = withPlan(sampleCatalog, "example-energy-a", {
+      status: "discontinued",
+    });
     const rows = rankerFor(catalogClone).rank(hours, "example-energy-a");
     const current = rows.find((row) => row.isCurrent);
     expect(current?.planId).toBe("example-energy-a");
@@ -55,11 +26,9 @@ describe("PlanRanker", () => {
   });
 
   it("includes only other active plans as switch-to", () => {
-    const catalogClone = withPlanStatus(
-      sampleCatalog,
-      "example-energy-b",
-      "discontinued",
-    );
+    const catalogClone = withPlan(sampleCatalog, "example-energy-b", {
+      status: "discontinued",
+    });
     const rows = rankerFor(catalogClone).rank(hours, "iec-flat");
     const altIds = rows
       .filter((row) => !row.isCurrent)

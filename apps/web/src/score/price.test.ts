@@ -1,44 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { CatalogLoader, CatalogStore } from "../catalog/load.js";
-import type { Catalog, Plan } from "../catalog/types.js";
-import type { HourUsage } from "../usage/aggregate.js";
+import type { Catalog } from "../catalog/types.js";
 import { PlanScorer } from "./price.js";
+import { hour, ilCatalog, ilStore, storeFor, withPlan } from "./test_helpers.js";
 
-const marketStore = new CatalogLoader().loadStore("il");
-const sampleCatalog = marketStore.raw;
+const marketStore = ilStore();
+const sampleCatalog = ilCatalog();
 const baseFlat = marketStore.baseFlatRatePerKwh();
 
-function hour(
-  year: number,
-  month: number,
-  day: number,
-  hourOfDay: number,
-  kwh: number,
-): HourUsage {
-  return { year, month, day, hour: hourOfDay, kwh };
-}
-
-function withStanding(source: Catalog, planId: string, fixed: number): Catalog {
-  return {
-    ...source,
-    plans: source.plans.map((plan) =>
-      plan.id === planId
-        ? ({ ...plan, fixed_per_period: fixed } as Plan)
-        : plan,
-    ),
-  };
-}
-
 function scorerFor(catalog: Catalog): PlanScorer {
-  return new PlanScorer(
-    new CatalogStore("il", catalog, marketStore.marketEntry()),
-  );
+  return new PlanScorer(storeFor(catalog));
 }
 
-function absoluteRate(
-  planId: string,
-  windowIndex: number,
-): number {
+function absoluteRate(planId: string, windowIndex: number): number {
   const plan = marketStore.findPlan(planId);
   const rate = plan.windows?.[windowIndex]?.rate_per_kwh;
   if (rate == null) {
@@ -79,11 +52,9 @@ describe("PlanScorer", () => {
     const peakRate = absoluteRate("iec-taoz", 0);
     const offPeakRate = absoluteRate("iec-taoz", 1);
 
-    // Monday summer — workday peak (IL week_start sunday)
     const peak = scorer.score("iec-taoz", [hour(2026, 7, 13, 18, 4)]);
     expect(peak.energyCost).toBeCloseTo(4 * peakRate, 10);
 
-    // Saturday — weekend catch-all
     const weekend = scorer.score("iec-taoz", [hour(2026, 7, 11, 18, 4)]);
     expect(weekend.energyCost).toBeCloseTo(4 * offPeakRate, 10);
   });
@@ -117,7 +88,9 @@ describe("PlanScorer", () => {
   });
 
   it("applies standing via bill_periods (3 months / period 2 = 1.5)", () => {
-    const catalogWithFee = withStanding(sampleCatalog, "iec-flat", 100);
+    const catalogWithFee = withPlan(sampleCatalog, "iec-flat", {
+      fixed_per_period: 100,
+    });
     const score = scorerFor(catalogWithFee).score("iec-flat", [
       hour(2026, 1, 1, 0, 1),
       hour(2026, 2, 1, 0, 1),

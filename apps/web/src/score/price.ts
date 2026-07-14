@@ -1,4 +1,4 @@
-import type { CatalogStore } from "../catalog/load.js";
+import type { CatalogStore } from "../catalog/store.js";
 import type { Plan, TimeWindow } from "../catalog/types.js";
 import type { HourUsage } from "../usage/aggregate.js";
 import { WindowMatcher } from "./windows.js";
